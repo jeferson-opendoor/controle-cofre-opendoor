@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Cofre - OPENDOOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .backup-section {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .backup-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .backup-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            color: #343a40;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(220,53,69,0.3);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        th {
+            background: linear-gradient(135deg, #343a40, #495057);
+            color: white;
+            padding: 15px 10px;
+            font-weight: 600;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f1f3f4;
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-pendente {
+            background: #ffeaa7;
+            color: #d63031;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-compensado {
+            background: #55efc4;
+            color: #00b894;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-devolvido {
+            background: #ff7675;
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .export-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 10px 5px;
+        }
+
+        .backup-section-main {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .backup-section-main h3 {
+            margin-bottom: 15px;
+        }
+
+        .backup-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .backup-buttons button, .backup-buttons input[type="file"] + label {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .backup-buttons button:hover, .backup-buttons input[type="file"] + label:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .info-section {
+            background: #e7f3ff;
+            border: 2px solid #b3d9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .info-section h4 {
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+
+        .info-section p {
+            color: #004499;
+            margin-bottom: 8px;
+        }
+
+        /* Estilos do Calendário */
+        .calendar-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .calendar-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-header h3 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .calendar-nav button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e9ecef;
+            padding: 20px;
+        }
+
+        .calendar-day-header {
+            background: #343a40;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .calendar-day {
+            background: white;
+            padding: 15px 10px;
+            min-height: 100px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .calendar-day:hover {
+            background: #f8f9fa;
+        }
+
+        .calendar-day.other-month {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .calendar-day.today {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+
+        .calendar-day .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .calendar-day .cheque-item {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+            padding: 3px 6px;
+            margin: 2px 0;
+            font-size: 0.7rem;
+            border-radius: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .calendar-day .cheque-item.vencido {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .calendar-day .cheque-item.hoje {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            padding: 15px;
+            background: #f8f9fa;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        /* Estilos das previsões */
+        .previsao-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .previsao-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid #007bff;
+            transition: transform 0.2s ease;
+        }
+
+        .previsao-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .previsao-card.vencido {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #fff, #fff5f5);
+        }
+
+        .previsao-card.hoje {
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #fff, #f8fff8);
+        }
+
+        .previsao-card.proximo {
+            border-left-color: #ffc107;
+            background: linear-gradient(135deg, #fff, #fffdf5);
+        }
+
+        .previsao-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .previsao-data {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #343a40;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-vencido {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-hoje {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-proximo {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .status-futuro {
+            background: #007bff;
+            color: white;
+        }
+
+        .previsao-valor {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .previsao-cheques {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .previsao-acumulado {
+            color: #495057;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding-top: 10px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .header-content {
+                gap: 10px;
+            }
+
+            .logo-container svg {
+                width: 100px;
+                height: 50px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .backup-section {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .backup-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .calendar-grid {
+                padding: 10px;
+            }
+
+            .calendar-day {
+                min-height: 80px;
+                padding: 10px 5px;
+            }
+
+            .previsao-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="backup-section">
+                <button class="backup-btn" onclick="fazerBackup()">💾 Backup</button>
+                <button class="backup-btn" onclick="document.getElementById('fileInput').click()">📂 Restaurar</button>
+                <input type="file" id="fileInput" accept=".json" onchange="restaurarBackup(event)" style="display: none;">
+            </div>
+            <h1>🏢 OPENDOOR</h1>
+            <p>Sistema de Controle de Cofre e Movimentação Financeira</p>
+        </div>
+
+        <div class="info-section">
+            <h4>ℹ️ Como funciona o armazenamento:</h4>
+            <p>• Seus dados são salvos automaticamente no navegador</p>
+            <p>• Use o botão "Backup" para salvar um arquivo de segurança</p>
+            <p>• Use "Restaurar" para carregar dados de um backup</p>
+            <p>• Exporte relatórios em CSV para usar no Excel</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('cheques')">📋 Cheques Recebidos</button>
+            <button class="nav-tab" onclick="showTab('calendario')">📅 Calendário de Vencimentos</button>
+            <button class="nav-tab" onclick="showTab('previsoes')">📊 Previsões</button>
+            <button class="nav-tab" onclick="showTab('cofre')">💰 Controle do Cofre</button>
+            <button class="nav-tab" onclick="showTab('movimentacao')">💸 Movimentações</button>
+            <button class="nav-tab" onclick="showTab('relatorio')">📊 Relatórios</button>
+            <button class="nav-tab" onclick="showTab('backup')">🔒 Backup & Restaurar</button>
+        </div>
+
+        <!-- Tab Cheques -->
+        <div id="cheques" class="tab-content active">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>Total em Cheques</h3>
+                    <div class="value" id="totalCheques">R$ 0,00</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Cheques Pendentes</h3>
+                    <div class="value" id="chequesPendentes">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Cheques Compensados</h3>
+                    <div class="value" id="chequesCompensados">0</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>🏦 Cadastrar Novo Cheque</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Número do Cheque</label>
+                        <input type="text" id="numeroCheque" placeholder="Ex: 000123">
+                    </div>
+                    <div class="form-group">
+                        <label>Banco</label>
+                        <input type="text" id="bancoCheque" placeholder="Ex: Banco do Brasil">
+                    </div>
+                    <div class="form-group">
+                        <label>Agência</label>
+                        <input type="text" id="agenciaCheque" placeholder="Ex: 1234-5">
+                    </div>
+                    <div class="form-group">
+                        <label>Conta</label>
+                        <input type="text" id="contaCheque" placeholder="Ex: 12345-6">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" id="valorCheque" step="0.01" placeholder="0,00">
+                    </div>
+                    <div class="form-group">
+                        <label>Data do Cheque</label>
+                        <input type="date" id="dataCheque">
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Vencimento</label>
+                        <input type="date" id="dataVencimentoCheque">
+                    </div>
+                    <div class="form-group">
+                        <label>Emitente</label>
+                        <input type="text" id="emitenteCheque" placeholder="Nome do emissor">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="statusCheque">
+                            <option value="Pendente">Pendente</option>
+                            <option value="Compensado">Compensado</option>
+                            <option value="Devolvido">Devolvido</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="adicionarCheque()">➕ Adicionar Cheque</button>
+            </div>
+
+            <div class="table-container">
+                <button class="export-btn" onclick="exportarCheques()">📤 Exportar Cheques</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Banco</th>
+                            <th>Agência</th>
+                            <th>Conta</th>
+                            <th>Valor</th>
+                            <th>Data Emissão</th>
+                            <th>Data Vencimento</th>
+                            <th>Emitente</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaCheques">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab Calendário -->
+        <div id="calendario" class="tab-content">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3 id="mesAnoAtual">Janeiro 2024</h3>
+                    <div class="calendar-nav">
+                        <button onclick="navegarMes(-1)">◀ Anterior</button>
+                        <button onclick="irParaHoje()">Hoje</button>
+                        <button onclick="navegarMes(1)">Próximo ▶</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarioGrid">
+                    <!-- Calendário será gerado aqui -->
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f8d7da; border-left: 3px solid #dc3545;"></div>
+                        <span>Vencidos</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #d4edda; border-left: 3px solid #28a745;"></div>
+                        <span>Vence Hoje</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #fff3cd; border-left: 3px solid #ffc107;"></div>
+                        <span>Próximos Vencimentos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Previsões -->
+        <div id="previsoes" class="tab-content">
+            <div class="summary-cards">
+                <div class="summary-card" style="background: linear-gradient(135deg, #dc3545, #c82333);">
+                    <h3>Cheques Vencidos</h3>
+                    <div class="value" id="valorVencidos">R$ 0,00</div>
+                    <p id="qtdVencidos">0 cheques</p>
+                </div>
+                <div class="summary-card" style="background: linear-gradient(135deg, #28a745, #1e7e34);">
+                    <h3>Disponível Hoje</h3>
+                    <div class="value" id="valorHoje">R$ 0,00</div>
+                    <p id="qtdHoje">0 cheques</p>
+                </div>
+                <div class="summary-card" style="background: linear-gradient(135deg, #ffc107, #e0a800);">
+                    <h3>Próximos 7 Dias</h3>
+                    <div class="value" id="valor7Dias">R$ 0,00</div>
+                    <p id="qtd7Dias">0 cheques</p>
+                </div>
+                <div class="summary-card" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                    <h3>Próximos 30 Dias</h3>
+                    <div class="value" id="valor30Dias">R$ 0,00</div>
+                    <p id="qtd30Dias">0 cheques</p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📈 Previsão de Fluxo de Caixa</h3>
+                <div id="previsaoContainer">
+                    <!-- Previsões serão geradas aqui -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Cofre -->
+        <div id="cofre" class="tab-content">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>Saldo Atual do Cofre</h3>
+                    <div class="value" id="saldoCofre">R$ 0,00</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total de Entradas</h3>
+                    <div class="value" id="totalEntradas">R$ 0,00</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total de Saídas</h3>
+                    <div class="value" id="totalSaidas">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>💰 Registrar Movimentação no Cofre</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tipo de Operação</label>
+                        <select id="tipoOperacao">
+                            <option value="Entrada">➕ Entrada</option>
+                            <option value="Saída">➖ Saída</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" id="valorOperacao" step="0.01" placeholder="0,00">
+                    </div>
+                    <div class="form-group">
+                        <label>Data da Operação</label>
+                        <input type="date" id="dataOperacao">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="categoriaOperacao">
+                            <option value="Depósito Bancário">Depósito Bancário</option>
+                            <option value="Pagamento Fornecedor">Pagamento Fornecedor</option>
+                            <option value="Despesas Operacionais">Despesas Operacionais</option>
+                            <option value="Recebimento Cliente">Recebimento Cliente</option>
+                            <option value="Troco">Troco</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Descrição/Observações</label>
+                    <textarea id="descricaoOperacao" rows="3" placeholder="Descreva a finalidade da operação..."></textarea>
+                </div>
+                <button class="btn" onclick="registrarOperacao()">💾 Registrar Operação</button>
+            </div>
+        </div>
+
+        <!-- Tab Movimentações -->
+        <div id="movimentacao" class="tab-content">
+            <div class="table-container">
+                <button class="export-btn" onclick="exportarMovimentacoes()">📤 Exportar Movimentações</button>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaMovimentacoes">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab Relatórios -->
+        <div id="relatorio" class="tab-content">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>Patrimônio Total</h3>
+                    <div class="value" id="patrimonioTotal">R$ 0,00</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Fluxo do Mês</h3>
+                    <div class="value" id="fluxoMes">R$ 0,00</div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>📈 Resumo Financeiro</h3>
+                <div id="resumoFinanceiro"></div>
+            </div>
+        </div>
+
+        <!-- Tab Backup -->
+        <div id="backup" class="tab-content">
+            <div class="backup-section-main">
+                <h3>🔒 Backup e Restauração de Dados</h3>
+                <p style="margin-bottom: 20px;">Mantenha seus dados seguros com backups regulares</p>
+                <div class="backup-buttons">
+                    <button onclick="fazerBackup()">💾 Fazer Backup Completo</button>
+                    <button onclick="exportarTudo()">📊 Exportar Tudo (CSV)</button>
+                    <label for="fileInputBackup">📂 Restaurar Backup</label>
+                    <input type="file" id="fileInputBackup" accept=".json" onchange="restaurarBackup(event)">
+                    <button onclick="limparTodosDados()" style="background: rgba(220,53,69,0.8);">🗑️ Limpar Todos os Dados</button>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h4>📋 Instruções:</h4>
+                <p><strong>Fazer Backup:</strong> Salva um arquivo .json com todos os seus dados</p>
+                <p><strong>Restaurar Backup:</strong> Carrega dados de um arquivo .json salvo anteriormente</p>
+                <p><strong>Exportar CSV:</strong> Cria arquivos Excel com cheques e movimentações</p>
+                <p><strong>Limpar Dados:</strong> Remove todos os dados (use com cuidado!)</p>
+            </div>
+
+            <div class="form-section">
+                <h3>📊 Estatísticas dos Dados</h3>
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h3>Total de Cheques</h3>
+                        <div class="value" id="totalChequesCount">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Total de Movimentações</h3>
+                        <div class="value" id="totalMovimentacoesCount">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Última Atualização</h3>
+                        <div class="value" style="font-size: 1rem;" id="ultimaAtualizacao">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados da aplicação
+        let cheques = [];
+        let movimentacoes = [];
+        let calendarioAtual = new Date();
+
+        // Inicialização
+        function inicializarApp() {
+            carregarDados();
+            
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataCheque').value = hoje;
+            document.getElementById('dataOperacao').value = hoje;
+
+            atualizarTabelaCheques();
+            atualizarTabelaMovimentacoes();
+            atualizarResumos();
+            atualizarEstatisticas();
+            gerarCalendario();
+            atualizarPrevisoes();
+        }
+
+        // Função para salvar dados no localStorage
+        function salvarDados() {
+            const dados = {
+                cheques: cheques,
+                movimentacoes: movimentacoes,
+                ultimaAtualizacao: new Date().toISOString()
+            };
+            localStorage.setItem('controle_cofre_opendoor', JSON.stringify(dados));
+            atualizarEstatisticas();
+        }
+
+        // Função para carregar dados do localStorage
+        function carregarDados() {
+            const dadosSalvos = localStorage.getItem('controle_cofre_opendoor');
+            if (dadosSalvos) {
+                const dados = JSON.parse(dadosSalvos);
+                cheques = dados.cheques || [];
+                movimentacoes = dados.movimentacoes || [];
+            }
+        }
+
+        // Navegação entre abas
+        function showTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            atualizarResumos();
+            if (tabName === 'backup') {
+                atualizarEstatisticas();
+            }
+            if (tabName === 'calendario') {
+                gerarCalendario();
+            }
+            if (tabName === 'previsoes') {
+                atualizarPrevisoes();
+            }
+        }
+
+        // Adicionar cheque
+        function adicionarCheque() {
+            const numero = document.getElementById('numeroCheque').value;
+            const banco = document.getElementById('bancoCheque').value;
+            const agencia = document.getElementById('agenciaCheque').value;
+            const conta = document.getElementById('contaCheque').value;
+            const valor = parseFloat(document.getElementById('valorCheque').value);
+            const data = document.getElementById('dataCheque').value;
+            const dataVencimento = document.getElementById('dataVencimentoCheque').value;
+            const emitente = document.getElementById('emitenteCheque').value;
+            const status = document.getElementById('statusCheque').value;
+
+            if (!numero || !banco || !valor || !data || !emitente) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+
+            const cheque = {
+                id: Date.now(),
+                numero, banco, agencia, conta, valor, data, 
+                dataVencimento: dataVencimento || data, 
+                emitente, status
+            };
+
+            cheques.push(cheque);
+            salvarDados();
+            
+            // Limpar formulário
+            document.getElementById('numeroCheque').value = '';
+            document.getElementById('bancoCheque').value = '';
+            document.getElementById('agenciaCheque').value = '';
+            document.getElementById('contaCheque').value = '';
+            document.getElementById('valorCheque').value = '';
+            document.getElementById('dataCheque').value = new Date().toISOString().split('T')[0];
+            document.getElementById('dataVencimentoCheque').value = '';
+            document.getElementById('emitenteCheque').value = '';
+            
+            atualizarTabelaCheques();
+            atualizarResumos();
+            gerarCalendario();
+            atualizarPrevisoes();
+            
+            alert('Cheque adicionado com sucesso!');
+        }
+
+        // Registrar operação
+        function registrarOperacao() {
+            const tipo = document.getElementById('tipoOperacao').value;
+            const valor = parseFloat(document.getElementById('valorOperacao').value);
+            const data = document.getElementById('dataOperacao').value;
+            const categoria = document.getElementById('categoriaOperacao').value;
+            const descricao = document.getElementById('descricaoOperacao').value;
+
+            if (!valor || !data || !descricao) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+
+            const operacao = {
+                id: Date.now(),
+                tipo, valor, data, categoria, descricao
+            };
+
+            movimentacoes.push(operacao);
+            salvarDados();
+            
+            // Limpar formulário
+            document.getElementById('valorOperacao').value = '';
+            document.getElementById('dataOperacao').value = new Date().toISOString().split('T')[0];
+            document.getElementById('descricaoOperacao').value = '';
+            
+            atualizarTabelaMovimentacoes();
+            atualizarResumos();
+            
+            alert('Operação registrada com sucesso!');
+        }
+
+        // Atualizar tabela de cheques
+        function atualizarTabelaCheques() {
+            const tbody = document.getElementById('tabelaCheques');
+            tbody.innerHTML = '';
+
+            cheques.forEach(cheque => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${cheque.numero}</td>
+                    <td>${cheque.banco}</td>
+                    <td>${cheque.agencia || '-'}</td>
+                    <td>${cheque.conta || '-'}</td>
+                    <td>R$ ${cheque.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td>${new Date(cheque.data).toLocaleDateString('pt-BR')}</td>
+                    <td>${new Date(cheque.dataVencimento || cheque.data).toLocaleDateString('pt-BR')}</td>
+                    <td>${cheque.emitente}</td>
+                    <td><span class="status-${cheque.status.toLowerCase()}">${cheque.status}</span></td>
+                    <td><button class="delete-btn" onclick="removerCheque(${cheque.id})">🗑️</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Atualizar tabela de movimentações
+        function atualizarTabelaMovimentacoes() {
+            const tbody = document.getElementById('tabelaMovimentacoes');
+            tbody.innerHTML = '';
+
+            movimentacoes.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(mov => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(mov.data).toLocaleDateString('pt-BR')}</td>
+                    <td>${mov.tipo}</td>
+                    <td>${mov.categoria}</td>
+                    <td style="color: ${mov.tipo === 'Entrada' ? 'green' : 'red'}">
+                        ${mov.tipo === 'Entrada' ? '+' : '-'} R$ ${mov.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                    </td>
+                    <td>${mov.descricao}</td>
+                    <td><button class="delete-btn" onclick="removerMovimentacao(${mov.id})">🗑️</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Função para gerar o calendário
+        function gerarCalendario() {
+            const container = document.getElementById('calendarioGrid');
+            const mesAnoElement = document.getElementById('mesAnoAtual');
+            
+            // Atualizar título do mês/ano
+            const meses = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            mesAnoElement.textContent = `${meses[calendarioAtual.getMonth()]} ${calendarioAtual.getFullYear()}`;
+
+            // Limpar calendário
+            container.innerHTML = '';
+
+            // Cabeçalho dos dias da semana
+            const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            diasSemana.forEach(dia => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                header.textContent = dia;
+                container.appendChild(header);
+            });
+
+            // Calcular primeiro e último dia do mês
+            const primeiroDia = new Date(calendarioAtual.getFullYear(), calendarioAtual.getMonth(), 1);
+            const ultimoDia = new Date(calendarioAtual.getFullYear(), calendarioAtual.getMonth() + 1, 0);
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            // Dias do mês anterior para completar a primeira semana
+            const diasAnterior = primeiroDia.getDay();
+            for (let i = diasAnterior - 1; i >= 0; i--) {
+                const data = new Date(primeiroDia);
+                data.setDate(data.getDate() - i - 1);
+                criarDiaCalendario(container, data, true);
+            }
+
+            // Dias do mês atual
+            for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+                const data = new Date(calendarioAtual.getFullYear(), calendarioAtual.getMonth(), dia);
+                criarDiaCalendario(container, data, false);
+            }
+
+            // Dias do próximo mês para completar a última semana
+            const diasProximo = 42 - (diasAnterior + ultimoDia.getDate()); // 6 semanas x 7 dias = 42
+            for (let dia = 1; dia <= diasProximo; dia++) {
+                const data = new Date(calendarioAtual.getFullYear(), calendarioAtual.getMonth() + 1, dia);
+                criarDiaCalendario(container, data, true);
+            }
+        }
+
+        // Criar um dia no calendário
+        function criarDiaCalendario(container, data, outroMes) {
+            const diaElement = document.createElement('div');
+            diaElement.className = 'calendar-day';
+            
+            if (outroMes) {
+                diaElement.classList.add('other-month');
+            }
+
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            data.setHours(0, 0, 0, 0);
+            
+            if (data.getTime() === hoje.getTime()) {
+                diaElement.classList.add('today');
+            }
+
+            // Número do dia
+            const numeroElement = document.createElement('div');
+            numeroElement.className = 'day-number';
+            numeroElement.textContent = data.getDate();
+            diaElement.appendChild(numeroElement);
+
+            // Buscar cheques para este dia
+            const dataString = data.toISOString().split('T')[0];
+            const chequesNoDia = cheques.filter(cheque => {
+                const vencimento = cheque.dataVencimento || cheque.data;
+                return vencimento === dataString && cheque.status === 'Pendente';
+            });
+
+            // Adicionar cheques ao dia
+            chequesNoDia.forEach(cheque => {
+                const chequeElement = document.createElement('div');
+                chequeElement.className = 'cheque-item';
+                
+                // Definir classe baseada no status de vencimento
+                if (data < hoje) {
+                    chequeElement.classList.add('vencido');
+                } else if (data.getTime() === hoje.getTime()) {
+                    chequeElement.classList.add('hoje');
+                }
+
+                chequeElement.textContent = `#${cheque.numero} - R$ ${cheque.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                chequeElement.title = `Cheque ${cheque.numero} - ${cheque.emitente} - R$ ${cheque.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                
+                diaElement.appendChild(chequeElement);
+            });
+
+            container.appendChild(diaElement);
+        }
+
+        // Navegar entre meses
+        function navegarMes(direcao) {
+            calendarioAtual.setMonth(calendarioAtual.getMonth() + direcao);
+            gerarCalendario();
+        }
+
+        // Ir para o mês atual
+        function irParaHoje() {
+            calendarioAtual = new Date();
+            gerarCalendario();
+        }
+
+        // Função para atualizar previsões
+        function atualizarPrevisoes() {
+            const container = document.getElementById('previsaoContainer');
+            const chequesPendentes = cheques.filter(c => c.status === 'Pendente');
+            
+            if (chequesPendentes.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">Nenhum cheque pendente para previsão</p>';
+                atualizarSummaryPrevisoes();
+                return;
+            }
+
+            // Agrupar cheques por data de vencimento
+            const gruposPorData = {};
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            chequesPendentes.forEach(cheque => {
+                const dataVenc = cheque.dataVencimento || cheque.data;
+                if (!gruposPorData[dataVenc]) {
+                    gruposPorData[dataVenc] = [];
+                }
+                gruposPorData[dataVenc].push(cheque);
+            });
+
+            // Ordenar datas
+            const datasOrdenadas = Object.keys(gruposPorData).sort((a, b) => new Date(a) - new Date(b));
+
+            let htmlPrevisoes = '<div class="previsao-grid">';
+            let valorAcumulado = 0;
+
+            datasOrdenadas.forEach(data => {
+                const chequesData = gruposPorData[data];
+                const valorData = chequesData.reduce((sum, c) => sum + c.valor, 0);
+                valorAcumulado += valorData;
+
+                const dataObj = new Date(data);
+                dataObj.setHours(0, 0, 0, 0);
+                
+                // Determinar categoria da data
+                let categoria = 'futuro';
+                let badge = 'Futuro';
+                let badgeClass = 'status-futuro';
+                
+                const diffDias = Math.ceil((dataObj - hoje) / (1000 * 60 * 60 * 24));
+                
+                if (diffDias < 0) {
+                    categoria = 'vencido';
+                    badge = 'Vencido';
+                    badgeClass = 'status-vencido';
+                } else if (diffDias === 0) {
+                    categoria = 'hoje';
+                    badge = 'Hoje';
+                    badgeClass = 'status-hoje';
+                } else if (diffDias <= 7) {
+                    categoria = 'proximo';
+                    badge = 'Próximos 7 dias';
+                    badgeClass = 'status-proximo';
+                }
+
+                const diasTexto = diffDias === 0 ? 'Hoje' : 
+                                 diffDias === 1 ? 'Amanhã' :
+                                 diffDias > 0 ? `Em ${diffDias} dias` :
+                                 `${Math.abs(diffDias)} dias atrás`;
+
+                htmlPrevisoes += `
+                    <div class="previsao-card ${categoria}">
+                        <div class="previsao-header">
+                            <div class="previsao-data">
+                                ${dataObj.toLocaleDateString('pt-BR', { 
+                                    weekday: 'short', 
+                                    day: '2-digit', 
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                })}
+                            </div>
+                            <span class="status-badge ${badgeClass}">${badge}</span>
+                        </div>
+                        <div class="previsao-valor">
+                            R$ ${valorData.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                        </div>
+                        <div class="previsao-cheques">
+                            ${chequesData.length} cheque${chequesData.length > 1 ? 's' : ''} • ${diasTexto}
+                        </div>
+                        <div class="previsao-acumulado">
+                            Acumulado até esta data: R$ ${valorAcumulado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.8rem;">
+                            ${chequesData.map(c => `#${c.numero} - ${c.emitente} (R$ ${c.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})})`).join('<br>')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            htmlPrevisoes += '</div>';
+            container.innerHTML = htmlPrevisoes;
+            
+            // Atualizar summary cards
+            atualizarSummaryPrevisoes();
+        }
+
+        // Atualizar cards de resumo das previsões
+        function atualizarSummaryPrevisoes() {
+            const chequesPendentes = cheques.filter(c => c.status === 'Pendente');
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const chequesVencidos = chequesPendentes.filter(c => {
+                const dataVenc = new Date(c.dataVencimento || c.data);
+                dataVenc.setHours(0, 0, 0, 0);
+                return dataVenc < hoje;
+            });
+
+            const chequesHoje = chequesPendentes.filter(c => {
+                const dataVenc = new Date(c.dataVencimento || c.data);
+                dataVenc.setHours(0, 0, 0, 0);
+                return dataVenc.getTime() === hoje.getTime();
+            });
+
+            const cheques7Dias = chequesPendentes.filter(c => {
+                const dataVenc = new Date(c.dataVencimento || c.data);
+                dataVenc.setHours(0, 0, 0, 0);
+                const em7Dias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000);
+                return dataVenc > hoje && dataVenc <= em7Dias;
+            });
+
+            const cheques30Dias = chequesPendentes.filter(c => {
+                const dataVenc = new Date(c.dataVencimento || c.data);
+                dataVenc.setHours(0, 0, 0, 0);
+                const em30Dias = new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000);
+                return dataVenc > new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000) && dataVenc <= em30Dias;
+            });
+
+            document.getElementById('valorVencidos').textContent = `R$ ${chequesVencidos.reduce((sum, c) => sum + c.valor, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('qtdVencidos').textContent = `${chequesVencidos.length} cheques`;
+
+            document.getElementById('valorHoje').textContent = `R$ ${chequesHoje.reduce((sum, c) => sum + c.valor, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('qtdHoje').textContent = `${chequesHoje.length} cheques`;
+
+            document.getElementById('valor7Dias').textContent = `R$ ${cheques7Dias.reduce((sum, c) => sum + c.valor, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('qtd7Dias').textContent = `${cheques7Dias.length} cheques`;
+
+            document.getElementById('valor30Dias').textContent = `R$ ${cheques30Dias.reduce((sum, c) => sum + c.valor, 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('qtd30Dias').textContent = `${cheques30Dias.length} cheques`;
+        }
+
+        // Atualizar resumos
+        function atualizarResumos() {
+            // Resumo de cheques
+            const totalCheques = cheques.reduce((sum, cheque) => sum + cheque.valor, 0);
+            const pendentes = cheques.filter(c => c.status === 'Pendente').length;
+            const compensados = cheques.filter(c => c.status === 'Compensado').length;
+
+            document.getElementById('totalCheques').textContent = `R$ ${totalCheques.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('chequesPendentes').textContent = pendentes;
+            document.getElementById('chequesCompensados').textContent = compensados;
+
+            // Resumo do cofre
+            const entradas = movimentacoes.filter(m => m.tipo === 'Entrada').reduce((sum, m) => sum + m.valor, 0);
+            const saidas = movimentacoes.filter(m => m.tipo === 'Saída').reduce((sum, m) => sum + m.valor, 0);
+            const saldoCofre = entradas - saidas;
+
+            document.getElementById('saldoCofre').textContent = `R$ ${saldoCofre.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('totalEntradas').textContent = `R$ ${entradas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('totalSaidas').textContent = `R$ ${saidas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+            // Relatórios
+            const chequesCompensadosValor = cheques.filter(c => c.status === 'Compensado').reduce((sum, c) => sum + c.valor, 0);
+            const patrimonioTotal = saldoCofre + chequesCompensadosValor;
+            const fluxoMes = entradas - saidas;
+            
+            document.getElementById('patrimonioTotal').textContent = `R$ ${patrimonioTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('fluxoMes').textContent = `R$ ${fluxoMes.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+            // Atualizar resumo financeiro
+            const resumoFinanceiro = document.getElementById('resumoFinanceiro');
+            resumoFinanceiro.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <h5 style="color: #28a745; margin-bottom: 10px;">💰 Situação do Cofre</h5>
+                        <p><strong>Saldo Atual:</strong> R$ ${saldoCofre.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                        <p><strong>Total Entradas:</strong> R$ ${entradas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                        <p><strong>Total Saídas:</strong> R$ ${saidas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                        <h5 style="color: #007bff; margin-bottom: 10px;">📋 Situação dos Cheques</h5>
+                        <p><strong>Total em Cheques:</strong> R$ ${totalCheques.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
+                        <p><strong>Pendentes:</strong> ${pendentes} cheques</p>
+                        <p><strong>Compensados:</strong> ${compensados} cheques</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Atualizar estatísticas
+        function atualizarEstatisticas() {
+            document.getElementById('totalChequesCount').textContent = cheques.length;
+            document.getElementById('totalMovimentacoesCount').textContent = movimentacoes.length;
+            
+            const ultimaAtualizacao = localStorage.getItem('controle_cofre_opendoor');
+            if (ultimaAtualizacao) {
+                const dados = JSON.parse(ultimaAtualizacao);
+                if (dados.ultimaAtualizacao) {
+                    const data = new Date(dados.ultimaAtualizacao);
+                    document.getElementById('ultimaAtualizacao').textContent = data.toLocaleString('pt-BR');
+                }
+            }
+        }
+
+        // Remover cheque
+        function removerCheque(id) {
+            if (confirm('Tem certeza que deseja remover este cheque?')) {
+                cheques = cheques.filter(c => c.id !== id);
+                salvarDados();
+                atualizarTabelaCheques();
+                atualizarResumos();
+                gerarCalendario();
+                atualizarPrevisoes();
+            }
+        }
+
+        // Remover movimentação
+        function removerMovimentacao(id) {
+            if (confirm('Tem certeza que deseja remover esta movimentação?')) {
+                movimentacoes = movimentacoes.filter(m => m.id !== id);
+                salvarDados();
+                atualizarTabelaMovimentacoes();
+                atualizarResumos();
+            }
+        }
+
+        // Exportar cheques para CSV
+        function exportarCheques() {
+            if (cheques.length === 0) {
+                alert('Não há cheques para exportar!');
+                return;
+            }
+
+            const csv = 'Número,Banco,Agência,Conta,Valor,Data Emissão,Data Vencimento,Emitente,Status\n' +
+                cheques.map(c => `${c.numero},"${c.banco}","${c.agencia || ''}","${c.conta || ''}",${c.valor},${c.data},${c.dataVencimento || ''},"${c.emitente}","${c.status}"`).join('\n');
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cheques_opendoor_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Exportar movimentações para CSV
+        function exportarMovimentacoes() {
+            if (movimentacoes.length === 0) {
+                alert('Não há movimentações para exportar!');
+                return;
+            }
+
+            const csv = 'Data,Tipo,Categoria,Valor,Descrição\n' +
+                movimentacoes.map(m => `${m.data},"${m.tipo}","${m.categoria}",${m.valor},"${m.descricao}"`).join('\n');
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `movimentacoes_opendoor_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Fazer backup completo
+        function fazerBackup() {
+            const dados = {
+                cheques: cheques,
+                movimentacoes: movimentacoes,
+                dataBackup: new Date().toISOString(),
+                versao: '1.0'
+            };
+
+            const json = JSON.stringify(dados, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_controle_cofre_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert('Backup realizado com sucesso!');
+        }
+
+        // Restaurar backup
+        function restaurarBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    
+                    if (dados.cheques && dados.movimentacoes) {
+                        const confirmar = confirm(
+                            `Deseja restaurar o backup?\n\n` +
+                            `Dados atuais:\n` +
+                            `• Cheques: ${cheques.length}\n` +
+                            `• Movimentações: ${movimentacoes.length}\n\n` +
+                            `Dados do backup:\n` +
+                            `• Cheques: ${dados.cheques.length}\n` +
+                            `• Movimentações: ${dados.movimentacoes.length}\n\n` +
+                            `Os dados atuais serão substituídos!`
+                        );
+
+                        if (confirmar) {
+                            cheques = dados.cheques;
+                            movimentacoes = dados.movimentacoes;
+                            salvarDados();
+                            
+                            atualizarTabelaCheques();
+                            atualizarTabelaMovimentacoes();
+                            atualizarResumos();
+                            atualizarEstatisticas();
+                            gerarCalendario();
+                            atualizarPrevisoes();
+                            
+                            alert('Backup restaurado com sucesso!');
+                        }
+                    } else {
+                        alert('Arquivo de backup inválido!');
+                    }
+                } catch (error) {
+                    alert('Erro ao ler arquivo de backup!');
+                    console.error('Erro no backup:', error);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Limpar input
+            event.target.value = '';
+        }
+
+        // Exportar tudo em CSV
+        function exportarTudo() {
+            if (cheques.length === 0 && movimentacoes.length === 0) {
+                alert('Não há dados para exportar!');
+                return;
+            }
+
+            // Exportar cheques se existirem
+            if (cheques.length > 0) {
+                exportarCheques();
+            }
+
+            // Exportar movimentações se existirem
+            if (movimentacoes.length > 0) {
+                setTimeout(() => {
+                    exportarMovimentacoes();
+                }, 500);
+            }
+
+            alert('Arquivos CSV gerados! Verifique sua pasta de Downloads.');
+        }
+
+        // Limpar todos os dados
+        function limparTodosDados() {
+            const confirmar = confirm(
+                'ATENÇÃO: Esta ação irá remover TODOS os dados!\n\n' +
+                'Dados que serão perdidos:\n' +
+                `• ${cheques.length} cheques\n` +
+                `• ${movimentacoes.length} movimentações\n\n` +
+                'Recomendamos fazer um backup antes!\n\n' +
+                'Deseja continuar?'
+            );
+
+            if (confirmar) {
+                const confirmarFinal = confirm(
+                    'ÚLTIMA CONFIRMAÇÃO!\n\n' +
+                    'Todos os dados serão perdidos permanentemente.\n' +
+                    'Esta ação não pode ser desfeita.\n\n' +
+                    'Continuar mesmo assim?'
+                );
+
+                if (confirmarFinal) {
+                    cheques = [];
+                    movimentacoes = [];
+                    localStorage.removeItem('controle_cofre_opendoor');
+                    
+                    atualizarTabelaCheques();
+                    atualizarTabelaMovimentacoes();
+                    atualizarResumos();
+                    atualizarEstatisticas();
+                    gerarCalendario();
+                    atualizarPrevisoes();
+                    
+                    alert('Todos os dados foram removidos!');
+                }
+            }
+        }
+
+        // Inicializar quando a página carregar
+        window.onload = inicializarApp;
+    </script>
+</body>
+</html>
